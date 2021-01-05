@@ -1,0 +1,45 @@
+plugins {
+   id 'org.jetbrains.kotlin.jvm' version '1.4.20'
+   id 'org.jetbrains.dokka' version '0.9.18'
+   id 'maven-publish'
+}
+
+repositories {
+   jcenter()
+}
+
+dependencies {
+   implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+   testImplementation 'org.jetbrains.kotlin:kotlin-test'
+   testImplementation 'org.jetbrains.kotlin:kotlin-test-junit'
+}
+
+compileKotlin {
+   kotlinOptions {
+      freeCompilerArgs = [
+         "-Xexperimental=kotlin.ExperimentalUnsignedTypes"
+      ]
+   }
+}
+
+compileTestKotlin {
+   kotlinOptions {
+      freeCompilerArgs = [
+         "-Xexperimental=kotlin.ExperimentalUnsignedTypes"
+      ]
+   }
+}
+
+test {
+   testLogging {
+      outputs.upToDateWhen {false}
+      showStandardStreams = true
+   }
+}
+
+dokka {
+   moduleName = 'SCTE35'
+   outputFormat = 'html' 
+   outputDirectory = "$buildDir/doc"
+   reportUndocumented = false
+}
