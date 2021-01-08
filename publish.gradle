@@ -1,0 +1,4 @@
+bintray {
+    user = System.getenv("bintrayUser")
+    key = System.getenv("bintrayApiKey")
+}
