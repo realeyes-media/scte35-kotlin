@@ -1,7 +1,8 @@
 plugins {
    id 'org.jetbrains.kotlin.jvm' version '1.4.20'
    id 'org.jetbrains.dokka' version '0.9.18'
-   id 'maven-publish'
+   id "com.jfrog.bintray" version "1.7.3"
+   id "maven-publish"
 }
 
 repositories {
@@ -42,4 +43,19 @@ dokka {
    outputFormat = 'html' 
    outputDirectory = "$buildDir/doc"
    reportUndocumented = false
+}
+
+ext {
+   bintrayRepo = 'scte35-kotlin'
+   bintrayName = 'realeyes-media.scte35-kotlin'
+
+   publishedGroupId = 'realeyes-media'
+
+   siteUrl = 'https://github.com/realeyes-media/scte35-kotlin'
+   gitUrl = 'https://github.com/realeyes-media/scte35-kotlin.git'
+   githubRepository= 'realeyes-media/scte35-kotlin'
+
+   developerId = 'realeyes-mike-patterson'
+   developerName = 'Mike Patterson'
+   developerEmail = 'mike.patterson@realeyes.com'
 }
