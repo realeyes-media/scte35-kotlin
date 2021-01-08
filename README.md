@@ -36,9 +36,15 @@ This library makes use of an experimental feature in Kotlin. This will show a wa
 
 ### Gradle:
 
-**TODO** after CI/CD call out the necessary maven repo to add to top level gradle
+The library is hosted on bintray and can be accessed via jCenter
 
 ```
+// top level gradle
+repositories {
+    jcenter()
+}
+
+// app or module gradle
 dependencies {
     implementation 'com.realeyes.scte35:scte35:<version>'
 }
