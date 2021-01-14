@@ -1,13 +1,17 @@
 plugins {
    id 'org.jetbrains.kotlin.jvm' version '1.4.20'
    id 'org.jetbrains.dokka' version '0.9.18'
-   id "com.jfrog.bintray" version "1.7.3"
+   id "com.jfrog.bintray" version "1.8.1"
    id "maven-publish"
 }
 
 repositories {
+   mavenCentral()
    jcenter()
 }
+
+version = '1.0.0'
+sourceCompatibility = 1.8
 
 dependencies {
    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
@@ -33,7 +37,7 @@ compileTestKotlin {
 
 test {
    testLogging {
-      outputs.upToDateWhen {false}
+      outputs.upToDateWhen { false }
       showStandardStreams = true
    }
 }
@@ -45,17 +49,80 @@ dokka {
    reportUndocumented = false
 }
 
-ext {
-   bintrayRepo = 'scte35-kotlin'
-   bintrayName = 'realeyes-media.scte35-kotlin'
+task sourcesJar(type: Jar, dependsOn: classes) {
+   classifier = 'sources'
+   from sourceSets.main.allSource
+}
 
-   publishedGroupId = 'realeyes-media'
+javadoc.failOnError = false
+task javadocJar(type: Jar, dependsOn: javadoc) {
+   classifier = 'javadoc'
+   from javadoc.destinationDir
+}
 
-   siteUrl = 'https://github.com/realeyes-media/scte35-kotlin'
-   gitUrl = 'https://github.com/realeyes-media/scte35-kotlin.git'
-   githubRepository= 'realeyes-media/scte35-kotlin'
+artifacts {
+   archives sourcesJar
+}
 
-   developerId = 'realeyes-mike-patterson'
-   developerName = 'Mike Patterson'
-   developerEmail = 'mike.patterson@realeyes.com'
+def pomConfig = {
+   licenses {
+      license {
+         name "The MIT License"
+         url "https://opensource.org/licenses/MIT"
+         distribution "repo"
+      }
+   }
+   developers {
+      developer {
+         id "realeyes"
+         name "RealEyes Media"
+         email "mike.patterson@realeyes.com"
+      }
+   }
+
+   scm {
+      url "https://github.com/realeyes-media/scte35-kotlin"
+   }
+}
+
+publishing {
+   publications {
+      mavenPublication(MavenPublication) {
+         from components.java
+         artifact sourcesJar {
+            classifier "sources"
+         }
+         groupId 'com.realeyes.scte35'
+         artifactId 'scte35'
+         version project.version
+         pom.withXml {
+            def root = asNode()
+            root.appendNode('description', 'Android SCTE-35 Parser Library')
+            root.appendNode('name', 'SCTE-35 Kotlin')
+            root.appendNode('url', 'https://github.com/realeyes-media/scte35-kotlin')
+            root.children().last() + pomConfig
+         }
+      }
+   }
+}
+
+bintray {
+   user = System.getProperty("bintrayUser")
+   key = System.getProperty("bintrayApiKey")
+   publications = ['mavenPublication']
+
+   pkg {
+      repo = 'scte35'
+      name = 'scte35'
+      userOrg = 'realeyes-mike-patterson'
+      licenses = ['MIT']
+      vcsUrl = 'https://github.com/realeyes-media/scte35-kotlin'
+      version {
+         name = project.version
+         desc = project.version
+         released  = new Date()
+      }
+   }
+
+   publish true
 }
