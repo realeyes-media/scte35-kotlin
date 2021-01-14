@@ -107,8 +107,8 @@ publishing {
 }
 
 bintray {
-   user = System.getProperty("bintrayUser")
-   key = System.getProperty("bintrayApiKey")
+   user = System.getenv("bintrayUser")
+   key = System.getenv("bintrayApiKey")
    publications = ['mavenPublication']
 
    pkg {
