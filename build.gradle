@@ -10,7 +10,6 @@ repositories {
    jcenter()
 }
 
-version = '1.0.0'
 sourceCompatibility = 1.8
 
 dependencies {
@@ -117,11 +116,6 @@ bintray {
       userOrg = 'realeyes-mike-patterson'
       licenses = ['MIT']
       vcsUrl = 'https://github.com/realeyes-media/scte35-kotlin'
-      version {
-         name = project.version
-         desc = project.version
-         released  = new Date()
-      }
    }
 
    publish true
