@@ -93,7 +93,7 @@ publishing {
          }
          groupId 'com.realeyes.scte35'
          artifactId 'scte35'
-         version project.version
+         version projectVersion
          pom.withXml {
             def root = asNode()
             root.appendNode('description', 'Android SCTE-35 Parser Library')
@@ -106,8 +106,8 @@ publishing {
 }
 
 bintray {
-   user = System.getenv("bintrayUser")
-   key = System.getenv("bintrayApiKey")
+   user = System.getProperty("bintray.user")
+   key = System.getProperty("bintray.key")
    publications = ['mavenPublication']
 
    pkg {
@@ -116,6 +116,11 @@ bintray {
       userOrg = 'realeyes-mike-patterson'
       licenses = ['MIT']
       vcsUrl = 'https://github.com/realeyes-media/scte35-kotlin'
+      version {
+         name = projectVersion
+         desc = projectVersion
+         released  = new Date()
+      }
    }
 
    publish true
