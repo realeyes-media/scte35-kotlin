@@ -38,6 +38,6 @@ sealed class SpliceCommand {
    /**
     * private_command()
     */
-   data class Private (val id:Long, val bytes:UByteArray) : SpliceCommand()
+   data class Private (val id:Long, val bytes:ByteArray) : SpliceCommand()
 
 }

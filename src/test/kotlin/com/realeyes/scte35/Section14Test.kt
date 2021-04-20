@@ -8,8 +8,8 @@ class Section14Test {
 
    companion object {
       @JvmStatic
-      fun decodeBase64(message:String) : UByteArray? {
-         return Base64.getDecoder().decode(message).asUByteArray()
+      fun decodeBase64(message:String) : ByteArray? {
+         return Base64.getDecoder().decode(message)
       }
    }
 
@@ -23,7 +23,7 @@ class Section14Test {
    @Test fun testSection_14_1_TimeSignal_PlacementOpportunityStart() {
       // Base64=/DA0AAAAAAAA///wBQb+cr0AUAAeAhxDVUVJSAAAjn/PAAGlmbAICAAAAAAsoKGKNAIAmsnRfg==
       val message = "/DA0AAAAAAAA///wBQb+cr0AUAAeAhxDVUVJSAAAjn/PAAGlmbAICAAAAAAsoKGKNAIAmsnRfg=="
-      val data : UByteArray = decodeBase64(message)!!
+      val data : ByteArray = decodeBase64(message)!!
       val decoder = Decoder(data)
       val info = decoder.getSpliceInfoSection()
 
@@ -102,24 +102,24 @@ class Section14Test {
             // Turner Identifier = 0x000000002ca0a18a
             assert(splice.upidType == UPID.Type.TI.ordinal)
             assert(splice.upidLength == 8)
-            assert(splice.upid!![0].bytes[0].toInt()==0x00)
-            assert(splice.upid!![0].bytes[1].toInt()==0x00)
-            assert(splice.upid!![0].bytes[2].toInt()==0x00)
-            assert(splice.upid!![0].bytes[3].toInt()==0x00)
-            assert(splice.upid!![0].bytes[4].toInt()==0x2c)
-            assert(splice.upid!![0].bytes[5].toInt()==0xa0)
-            assert(splice.upid!![0].bytes[6].toInt()==0xa1)
-            assert(splice.upid!![0].bytes[7].toInt()==0x8a)
+            assert(splice.upid!![0].bytes[0]==0x00.toByte())
+            assert(splice.upid!![0].bytes[1]==0x00.toByte())
+            assert(splice.upid!![0].bytes[2]==0x00.toByte())
+            assert(splice.upid!![0].bytes[3]==0x00.toByte())
+            assert(splice.upid!![0].bytes[4]==0x2c.toByte())
+            assert(splice.upid!![0].bytes[5]==0xa0.toByte())
+            assert(splice.upid!![0].bytes[6]==0xa1.toByte())
+            assert(splice.upid!![0].bytes[7]==0x8a.toByte())
 
-            val bytes = UByteArray(8)
-            bytes[0]=0x00u
-            bytes[1]=0x00u
-            bytes[2]=0x00u
-            bytes[3]=0x00u
-            bytes[4]=0x2cu
-            bytes[5]=0xa0u
-            bytes[6]=0xa1u
-            bytes[7]=0x8au
+            val bytes = ByteArray(8)
+            bytes[0]=0x00
+            bytes[1]=0x00
+            bytes[2]=0x00
+            bytes[3]=0x00
+            bytes[4]=0x2c
+            bytes[5]=0xa0.toByte()
+            bytes[6]=0xa1.toByte()
+            bytes[7]=0x8a.toByte()
             val upid = UPID(UPID.Type.TI.ordinal, bytes)
             assert(splice.upid!![0] == upid)
 
@@ -321,15 +321,15 @@ class Section14Test {
             // Turner Identifier = 0x000000002ca0a18a
             assert(splice.upidType == 8)
             assert(splice.upidLength == 8)
-            val bytes = UByteArray(8)
-            bytes[0]=0x00u
-            bytes[1]=0x00u
-            bytes[2]=0x00u
-            bytes[3]=0x00u
-            bytes[4]=0x2cu
-            bytes[5]=0xa0u
-            bytes[6]=0xa1u
-            bytes[7]=0x8au
+            val bytes = ByteArray(8)
+            bytes[0] = 0x00
+            bytes[1] = 0x00
+            bytes[2] = 0x00
+            bytes[3] = 0x00
+            bytes[4] = 0x2c
+            bytes[5] = 0xa0.toByte()
+            bytes[6] = 0xa1.toByte()
+            bytes[7] = 0x8a.toByte()
             val upid = UPID(UPID.Type.TI.ordinal, bytes)
             assert(splice.upid!![0] == upid)
 
@@ -438,15 +438,15 @@ class Section14Test {
             // Turner Identifier = 0x00000002ccbc344
             assert(splice.upidType == 8)
             assert(splice.upidLength == 8)
-            val bytes = UByteArray(8)
-            bytes[0] = 0x00u
-            bytes[1] = 0x00u
-            bytes[2] = 0x00u
-            bytes[3] = 0x00u
-            bytes[4] = 0x2cu
-            bytes[5] = 0xcbu
-            bytes[6] = 0xc3u
-            bytes[7] = 0x44u
+            val bytes = ByteArray(8)
+            bytes[0] = 0x00
+            bytes[1] = 0x00
+            bytes[2] = 0x00
+            bytes[3] = 0x00
+            bytes[4] = 0x2c
+            bytes[5] = 0xcb.toByte()
+            bytes[6] = 0xc3.toByte()
+            bytes[7] = 0x44
             val upid = UPID(UPID.Type.TI.ordinal, bytes)
             assert(splice.upid!![0] == upid)
 
@@ -498,15 +498,15 @@ class Section14Test {
             // Turner Identifier = 0x000000002ca4dba0
             assert(splice.upidType == 8)
             assert(splice.upidLength == 8)
-            val bytes = UByteArray(8)
-            bytes[0] = 0x00u
-            bytes[1] = 0x00u
-            bytes[2] = 0x00u
-            bytes[3] = 0x00u
-            bytes[4] = 0x2cu
-            bytes[5] = 0xa4u
-            bytes[6] = 0xdbu
-            bytes[7] = 0xa0u
+            val bytes = ByteArray(8)
+            bytes[0] = 0x00
+            bytes[1] = 0x00
+            bytes[2] = 0x00
+            bytes[3] = 0x00
+            bytes[4] = 0x2c
+            bytes[5] = 0xa4.toByte()
+            bytes[6] = 0xdb.toByte()
+            bytes[7] = 0xa0.toByte()
             val upid = UPID(UPID.Type.TI.ordinal, bytes)
             assert(splice.upid!![0] == upid)
 
@@ -618,15 +618,15 @@ class Section14Test {
             // Turner Identifier = 0x000000002ca56cf5
             assert(splice.upidType == 8)
             assert(splice.upidLength == 8)
-            val bytes = UByteArray(8)
-            bytes[0] = 0x00u
-            bytes[1] = 0x00u
-            bytes[2] = 0x00u
-            bytes[3] = 0x00u
-            bytes[4] = 0x2cu
-            bytes[5] = 0xa5u
-            bytes[6] = 0x6cu
-            bytes[7] = 0xf5u
+            val bytes = ByteArray(8)
+            bytes[0] = 0x00
+            bytes[1] = 0x00
+            bytes[2] = 0x00
+            bytes[3] = 0x00
+            bytes[4] = 0x2c
+            bytes[5] = 0xa5.toByte()
+            bytes[6] = 0x6c
+            bytes[7] = 0xf5.toByte()
             val upid = UPID(UPID.Type.TI.ordinal, bytes)
             assert(splice.upid!![0] == upid)
 
@@ -736,15 +736,15 @@ class Section14Test {
             // Turner Identifier = 0x00000000 2c a0 a1 e3
             assert(splice.upidType == 8)
             assert(splice.upidLength == 8)
-            val bytes = UByteArray(8)
-            bytes[0] = 0x00u
-            bytes[1] = 0x00u
-            bytes[2] = 0x00u
-            bytes[3] = 0x00u
-            bytes[4] = 0x2cu
-            bytes[5] = 0xa0u
-            bytes[6] = 0xa1u
-            bytes[7] = 0xe3u
+            val bytes = ByteArray(8)
+            bytes[0] = 0x00
+            bytes[1] = 0x00
+            bytes[2] = 0x00
+            bytes[3] = 0x00
+            bytes[4] = 0x2c
+            bytes[5] = 0xa0.toByte()
+            bytes[6] = 0xa1.toByte()
+            bytes[7] = 0xe3.toByte()
             val upid = UPID(UPID.Type.TI.ordinal, bytes)
             assert(splice.upid!![0] == upid)
 
@@ -796,15 +796,15 @@ class Section14Test {
             // Turner Identifier = 0x00000000 2c a0 a1 8a
             assert(splice.upidType == 8)
             assert(splice.upidLength == 8)
-            val bytes = UByteArray(8)
-            bytes[0] = 0x00u
-            bytes[1] = 0x00u
-            bytes[2] = 0x00u
-            bytes[3] = 0x00u
-            bytes[4] = 0x2cu
-            bytes[5] = 0xa0u
-            bytes[6] = 0xa1u
-            bytes[7] = 0x8au
+            val bytes = ByteArray(8)
+            bytes[0] = 0x00
+            bytes[1] = 0x00
+            bytes[2] = 0x00
+            bytes[3] = 0x00
+            bytes[4] = 0x2c
+            bytes[5] = 0xa0.toByte()
+            bytes[6] = 0xa1.toByte()
+            bytes[7] = 0x8a.toByte()
             val upid = UPID(UPID.Type.TI.ordinal, bytes)
             assert(splice.upid!![0] == upid)
 
@@ -913,15 +913,15 @@ class Section14Test {
             // Turner Identifier = 0x00000000 2c a5 6c 97
             assert(splice.upidType == 8)
             assert(splice.upidLength == 8)
-            val bytes = UByteArray(8)
-            bytes[0] = 0x00u
-            bytes[1] = 0x00u
-            bytes[2] = 0x00u
-            bytes[3] = 0x00u
-            bytes[4] = 0x2cu
-            bytes[5] = 0xa5u
-            bytes[6] = 0x6cu
-            bytes[7] = 0x97u
+            val bytes = ByteArray(8)
+            bytes[0] = 0x00
+            bytes[1] = 0x00
+            bytes[2] = 0x00
+            bytes[3] = 0x00
+            bytes[4] = 0x2c
+            bytes[5] = 0xa5.toByte()
+            bytes[6] = 0x6c
+            bytes[7] = 0x97.toByte()
             val upid = UPID(UPID.Type.TI.ordinal, bytes)
             assert(splice.upid!![0] == upid)
 
@@ -1031,15 +1031,15 @@ class Section14Test {
             // Turner Identifier = 0x000000002c b2 d7 9d
             assert(splice.upidType == 8)
             assert(splice.upidLength == 8)
-            val bytes = UByteArray(8)
-            bytes[0] = 0x00u
-            bytes[1] = 0x00u
-            bytes[2] = 0x00u
-            bytes[3] = 0x00u
-            bytes[4] = 0x2cu
-            bytes[5] = 0xb2u
-            bytes[6] = 0xd7u
-            bytes[7] = 0x9du
+            val bytes = ByteArray(8)
+            bytes[0] = 0x00
+            bytes[1] = 0x00
+            bytes[2] = 0x00
+            bytes[3] = 0x00
+            bytes[4] = 0x2c
+            bytes[5] = 0xb2.toByte()
+            bytes[6] = 0xd7.toByte()
+            bytes[7] = 0x9d.toByte()
             val upid = UPID(UPID.Type.TI.ordinal, bytes)
             assert(splice.upid!![0] == upid)
 
@@ -1091,15 +1091,15 @@ class Section14Test {
             // Turner Identifier = 0x000000002c b2 d7 9d
             assert(splice.upidType == 8)
             assert(splice.upidLength == 8)
-            val bytes = UByteArray(8)
-            bytes[0] = 0x00u
-            bytes[1] = 0x00u
-            bytes[2] = 0x00u
-            bytes[3] = 0x00u
-            bytes[4] = 0x2cu
-            bytes[5] = 0xb2u
-            bytes[6] = 0xd7u
-            bytes[7] = 0x9du
+            val bytes = ByteArray(8)
+            bytes[0] = 0x00
+            bytes[1] = 0x00
+            bytes[2] = 0x00
+            bytes[3] = 0x00
+            bytes[4] = 0x2c
+            bytes[5] = 0xb2.toByte()
+            bytes[6] = 0xd7.toByte()
+            bytes[7] = 0x9d.toByte()
             val upid = UPID(UPID.Type.TI.ordinal, bytes)
             assert(splice.upid!![0] == upid)
 
@@ -1151,15 +1151,15 @@ class Section14Test {
             // Turner Identifier = 0x000000002c b2 d7 b3
             assert(splice.upidType == 8)
             assert(splice.upidLength == 8)
-            val bytes = UByteArray(8)
-            bytes[0] = 0x00u
-            bytes[1] = 0x00u
-            bytes[2] = 0x00u
-            bytes[3] = 0x00u
-            bytes[4] = 0x2cu
-            bytes[5] = 0xb2u
-            bytes[6] = 0xd7u
-            bytes[7] = 0xb3u
+            val bytes = ByteArray(8)
+            bytes[0] = 0x00
+            bytes[1] = 0x00
+            bytes[2] = 0x00
+            bytes[3] = 0x00
+            bytes[4] = 0x2c
+            bytes[5] = 0xb2.toByte()
+            bytes[6] = 0xd7.toByte()
+            bytes[7] = 0xb3.toByte()
             val upid = UPID(UPID.Type.TI.ordinal, bytes)
             assert(splice.upid!![0] == upid)
 
