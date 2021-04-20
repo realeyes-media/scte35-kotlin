@@ -1,6 +1,7 @@
 package com.realeyes.scte35
 
 import android.util.Base64
+import kotlin.experimental.and
 
 /*
  * ToDo:
@@ -17,7 +18,7 @@ import android.util.Base64
  *
  * ### Kotlin:
  * ```
- * val data : UByteArray = ...
+ * val data : ByteArray = ...
  * val decoder = Decoder(data)
  * val info : SpliceInfoSection = decoder.getSpliceInfoSection()
  * ```
@@ -32,16 +33,16 @@ import android.util.Base64
  * @constructor Initializes the decoder with the given data.
  * @author Gregory Kip
  */
-class Decoder(private val data:UByteArray) {
+class Decoder(private val data:ByteArray) {
 
-   private val i : UByteIterator = data.iterator()
-   private var b : UByte = 0u // current byte
+   private val i : ByteIterator = data.iterator()
+   private var b : Byte = 0 // current byte
    private var p : Int = 0 // number of bits consumed
 
    companion object {
       @JvmStatic
       fun base64Decoder(message:String) : Decoder {
-         val bytes : UByteArray = Base64.decode(message, Base64.DEFAULT).asUByteArray()
+         val bytes : ByteArray = Base64.decode(message, Base64.DEFAULT)
          return Decoder(bytes)
       }
    }
@@ -56,23 +57,23 @@ class Decoder(private val data:UByteArray) {
    fun getSpliceInfoSection() : SpliceInfoSection {
       val info = SpliceInfoSection()
 
-      info.tableId = getUByte().toInt()
+      info.tableId = getByteAsInt()
       info.sectionSyntaxIndicator = getBoolean()
       info.privateIndicator = getBoolean()
       skipBits(2)
-      info.sectionLength = getBits(12).toInt()
-      info.protocolVersion = getUByte().toInt()
+      info.sectionLength = getBits(12)
+      info.protocolVersion = getByteAsInt()
       val encryptedPacket = getBoolean()
       info.encrypted = encryptedPacket
-      val algorithm = getBits(6).toInt()
+      val algorithm = getBits(6)
       info.encryptionAlgorithm = EncryptionAlgorithm.withOrdinal(algorithm)
-      info.ptsTypeAdjustment = getBitsLong(33).toLong()
-      info.cwIndex = getUByte().toInt()
-      info.tier = getBits(12).toInt()
+      info.ptsTypeAdjustment = getBitsLong(33)
+      info.cwIndex = getByteAsInt()
+      info.tier = getBits(12)
 
       // Splice Command
-      val spliceCommandLength = getBits(12).toInt()
-      val spliceCommandType = getUByte().toInt()
+      val spliceCommandLength = getBits(12)
+      val spliceCommandType = getByteAsInt()
       info.command = when (spliceCommandType) {
          0x00 -> SpliceCommand.Null
          0x04 -> getSpliceCommandSchedule()
@@ -84,10 +85,10 @@ class Decoder(private val data:UByteArray) {
       }
 
       // Splice Descriptors
-      val descriptorLoopLength = getBytes(2).toInt()
+      val descriptorLoopLength = getBytes(2)
       info.descriptors = getSpliceDescriptors(descriptorLoopLength)
       // stuffing
-      // if (encrypted) info.ecrc32 = getBytesLong(4).toLong() // ToDo
+      // if (encrypted) info.ecrc32 = getBytesLong(4) // ToDo
       // ToDo: two bytes too many in Section 14.1 test
       info.crc32 = getCRC32()
 
@@ -96,7 +97,7 @@ class Decoder(private val data:UByteArray) {
 
 
    private fun getSpliceCommandSchedule() : SpliceCommand.Schedule {
-      val spliceCount = getUByte().toInt()
+      val spliceCount = getByteAsInt()
       val tmp = arrayOfNulls<SpliceEventSchedule?>(spliceCount)
 
       for (i in 0 until spliceCount) {
@@ -121,11 +122,11 @@ class Decoder(private val data:UByteArray) {
 
             else {
                event.mode = SpliceMode.Component
-               val componentCount = getUByte().toInt()
+               val componentCount = getByteAsInt()
                val components = arrayOfNulls<SpliceEventSchedule.Component?>(componentCount)
 
                for (c in 0 until componentCount) {
-                  val tag = getUByte().toInt()
+                  val tag = getByteAsInt()
                   val time = getBytesLong(4).toLong()
                   components[c] = SpliceEventSchedule.Component(tag, time)
                }
@@ -138,8 +139,8 @@ class Decoder(private val data:UByteArray) {
             }
 
             event.programId = getBytes(2).toInt()
-            event.availNum = getUByte().toInt()
-            event.availsExpected = getUByte().toInt()
+            event.availNum = getByteAsInt()
+            event.availsExpected = getByteAsInt()
          }
 
          tmp[i] = event
@@ -179,11 +180,11 @@ class Decoder(private val data:UByteArray) {
          }
 
          if (!program) {
-            val componentCount = getUByte().toInt()
+            val componentCount = getByteAsInt()
             val components = arrayOfNulls<SpliceEventInsert.Component?>(componentCount)
 
             for (i in 0 until componentCount) {
-               val tag : Int = getUByte().toInt()
+               val tag : Int = getByteAsInt()
                val time : SpliceTime? = if (!immediate) getSpliceTime() else null
                components[i] = SpliceEventInsert.Component(tag, time)
             }
@@ -196,8 +197,8 @@ class Decoder(private val data:UByteArray) {
          }
 
          event.programId = getBytes(2).toInt()
-         event.availNum = getUByte().toInt()
-         event.availsExpected = getUByte().toInt()
+         event.availNum = getByteAsInt()
+         event.availsExpected = getByteAsInt()
       }
 
       return SpliceCommand.Insert(event)
@@ -213,8 +214,8 @@ class Decoder(private val data:UByteArray) {
    private fun getSpliceCommandPrivate(k:Int) : SpliceCommand.Private {
       if (k <= 0) throw IllegalArgumentException("Requested k=$k bytes, k non-positive.")
       val id = getBytesLong(4).toLong()
-      val bytes = UByteArray(k-4) { 0u }
-      for (i in bytes.indices) bytes[i] = getUByte()
+      val bytes = ByteArray(k-4) { 0 }
+      for (i in bytes.indices) bytes[i] = getByte()
       return SpliceCommand.Private(id, bytes)
    }
 
@@ -229,7 +230,7 @@ class Decoder(private val data:UByteArray) {
       while (n > 0) {
          val start = p
 
-         val tag = getUByte().toInt()
+         val tag = getByteAsInt()
 
          val descriptor : SpliceDescriptor? = when (tag) {
             0x00 -> getSpliceDescriptorAvail(tag)
@@ -254,22 +255,22 @@ class Decoder(private val data:UByteArray) {
 
 
    private fun getSpliceDescriptorAvail(tag:Int) : SpliceDescriptor.Avail? {
-      val length = getUByte().toInt()
+      val length = getByteAsInt()
       if (length == 0) return null
       val start = p
-      val id = getBytes(4).toLong()
-      val providerAvailIdentifier = getBytes(4).toLong()
+      val id = getBytesLong(4)
+      val providerAvailIdentifier = getBytesLong(4)
       if ((p-start)/8 != length) throw IllegalStateException("Expected to consume $length bytes, actually consumed ${(p-start)/8}.")
       return SpliceDescriptor.Avail(tag, id, providerAvailIdentifier)
    }
 
 
    private fun getSpliceDescriptorDTMF(tag:Int) : SpliceDescriptor.DTMF {
-      val length = getUByte().toInt()
+      val length = getByteAsInt()
       val start = p
-      val id = getBytes(4).toLong()
-      val preroll = getUByte().toInt()
-      val dtmfCount = getBits(2).toInt()
+      val id = getBytesLong(4)
+      val preroll = getByteAsInt()
+      val dtmfCount = getBits(2)
       skipBits(5)
       val dtmfChar = getString(dtmfCount)
       if ((p-start)/8 != length) throw IllegalStateException("Expected to consume $length bytes, actually consumed ${(p-start)/8}.")
@@ -280,10 +281,10 @@ class Decoder(private val data:UByteArray) {
    private fun getSpliceDescriptorSegmentation(tag:Int) : SpliceDescriptor.Segmentation {
       val splice = SpliceDescriptor.Segmentation()
       splice.tag = tag
-      val length = getUByte().toInt()
+      val length = getByteAsInt()
       val start = p
-      splice.id = getBytes(4).toLong()
-      splice.eventId = getBytes(4).toLong()
+      splice.id = getBytesLong(4)
+      splice.eventId = getBytesLong(4)
       val cancel = getBoolean()
       splice.cancel = cancel
       skipBits(7)
@@ -304,17 +305,17 @@ class Decoder(private val data:UByteArray) {
             splice.webDeliveryAllowed = getBoolean()
             splice.noRegionalBlackout = getBoolean()
             splice.archiveAllowed = getBoolean()
-            splice.deviceRestrictions = SpliceDescriptor.Segmentation.DeviceRestrictions.withOrdinal(getBits(2).toInt())
+            splice.deviceRestrictions = SpliceDescriptor.Segmentation.DeviceRestrictions.withOrdinal(getBits(2))
          } else {
             skipBits(5)
          }
 
          if (!program) {
-            val componentCount = getUByte().toInt()
+            val componentCount = getByteAsInt()
             val components = arrayOfNulls<SpliceDescriptor.Segmentation.Component?>(componentCount)
             for (i in 0 until componentCount) {
                val component = SpliceDescriptor.Segmentation.Component()
-               component.tag = getUByte().toInt()
+               component.tag = getByteAsInt()
                skipBits(7)
                component.ptsOffset = getBitsLong(33).toLong()
                components[i] = component
@@ -326,21 +327,21 @@ class Decoder(private val data:UByteArray) {
             splice.duration = getBytesLong(5).toLong()
          }
 
-         val upidType = getUByte().toInt()
+         val upidType = getByteAsInt()
          splice.upidType = upidType
-         val upidLength = getUByte().toInt()
+         val upidLength = getByteAsInt()
          splice.upidLength = upidLength
-         val upidBytes = getUByteArray(upidLength)
+         val upidBytes = getByteArray(upidLength)
          splice.upid = getUpids(upidType, upidBytes)
-         val typeId = getUByte().toInt()
+         val typeId = getByteAsInt()
          splice.segmentationType = SegmentationType.withId(typeId)
-         splice.segmentNum = getUByte().toInt()
-         splice.segmentsExpected = getUByte().toInt()
+         splice.segmentNum = getByteAsInt()
+         splice.segmentsExpected = getByteAsInt()
 
          /* ToDo: what is going on here? Section 14.1 example contradicts?
          if (typeId == 0x34 || typeId == 0x36) {
-            splice.subSegmentNum = getUByte().toInt()
-            splice.subSegmentsExpected = getUByte().toInt()
+            splice.subSegmentNum = getByteAsInt()
+            splice.subSegmentsExpected = getByteAsInt()
          }
          */
 
@@ -350,7 +351,7 @@ class Decoder(private val data:UByteArray) {
       return splice
    }
 
-   private fun getUpids(type: Int, bytes: UByteArray): Array<UPID> {
+   private fun getUpids(type: Int, bytes: ByteArray): Array<UPID> {
       if (type != UPID.Type.MID.ordinal) {
             return Array(1) { UPID(type, bytes) }
       }
@@ -373,11 +374,11 @@ class Decoder(private val data:UByteArray) {
    }
 
    private fun getSpliceDescriptorTime(tag:Int) : SpliceDescriptor.Time {
-      val length = getUByte().toInt()
+      val length = getByteAsInt()
       val start = p
-      val id = getBytes(4).toLong()
-      val taiSeconds = getBytesLong(6).toLong()
-      val taiNanoseconds = getBytesLong(4).toLong()
+      val id = getBytesLong(4)
+      val taiSeconds = getBytesLong(6)
+      val taiNanoseconds = getBytesLong(4)
       val utcOffset = getBytes(2).toInt()
       if ((p-start)/8 != length) throw IllegalStateException("Expected to consume $length bytes, actually consumed ${(p-start)/8}.")
       return SpliceDescriptor.Time(tag, id, taiSeconds, taiNanoseconds, utcOffset)
@@ -385,19 +386,19 @@ class Decoder(private val data:UByteArray) {
 
 
    private fun getSpliceDescriptorAudio(tag:Int) : SpliceDescriptor.Audio {
-      val length = getUByte().toInt()
+      val length = getByteAsInt()
       val start = p
-      val id = getBytes(4).toLong()
-      val audioCount = getBits(4).toInt()
+      val id = getBytesLong(4)
+      val audioCount = getBits(4)
       skipBits(4)
 
       val tmp = arrayOfNulls<SpliceDescriptor.Audio.Component>(audioCount)
 
       for (i in 0 until audioCount) {
-         val componentTag = getUByte().toInt()
-         val isoCode = getBytes(3).toInt()
-         val mode = BitStreamMode.withOrdinal(getBits(3).toInt())
-         val numChannels = getBits(4).toInt()
+         val componentTag = getByteAsInt()
+         val isoCode = getBytes(3)
+         val mode = BitStreamMode.withOrdinal(getBits(3))
+         val numChannels = getBits(4)
          val fullServiceAudio = getBoolean()
          tmp[i] = SpliceDescriptor.Audio.Component(componentTag, isoCode, mode, numChannels, fullServiceAudio)
       }
@@ -434,9 +435,9 @@ class Decoder(private val data:UByteArray) {
 
    private fun getCRC32() : Long {
       if (p > (data.size-4)*8) throw IllegalStateException("Requested crc32 (32 bits) but p=$p of ${data.size*8} bits have already been consumed.")
-      var crc32 : UInt = 0u
-      for (i in 0 until 4) crc32 = crc32.or(getUByte().toUInt().shl(8*(3-i)))
-      return crc32.toLong()
+      var crc32 : Long = 0
+      for (i in 0 until 4) crc32 = crc32.or(getByteAsLong().shl(8*(3-i)))
+      return crc32
    }
 
 
@@ -445,19 +446,26 @@ class Decoder(private val data:UByteArray) {
       if (k <= 0) throw IllegalArgumentException("Requested k=$k characters (bytes), k non-positive.")
       if (p.rem(8) != 0) throw IllegalStateException("Requested a string from off a byte boundary.")
       val sb = StringBuilder(k)
-      for (i in 1 .. k) sb.append(getUByte().toInt().toChar())
+      for (i in 1 .. k) sb.append(getByteAsInt().toChar())
       return sb.toString()
    }
 
 
    private fun getBoolean() : Boolean {
       //println("Requested Boolean from p=$p.")
-      return getBit() == 1u
+      return getBit() == 1
    }
 
+   private fun getByteAsLong() : Long {
+      return getByteAsInt().toLong()
+   }
 
-   private fun getUByte() : UByte {
-      //println("Requested UByte from p=$p.")
+   private fun getByteAsInt() : Int {
+      return getByte().toInt() and 0xFF
+   }
+
+   private fun getByte() : Byte {
+      //println("Requested Byte from p=$p.")
 
       if (p.rem(8) != 0) throw IllegalStateException("Requested byte from off a byte boundary.")
       b = i.next(); p+=8
@@ -465,44 +473,44 @@ class Decoder(private val data:UByteArray) {
    }
 
 
-   private fun getUShort() : UShort {
-      //println("Requested UShort (16) from p=$p.")
+   private fun getShort() : Short {
+      //println("Requested Short (16) from p=$p.")
 
-      if (p.rem(8) != 0) throw IllegalStateException("Requested UShort (16) from off a byte boundary.")
+      if (p.rem(8) != 0) throw IllegalStateException("Requested Short (16) from off a byte boundary.")
 
-      var r : UInt
-
-      b = i.next(); p+=8
-      r = b.toUInt().shl(8)
+      var r : Int
 
       b = i.next(); p+=8
-      r = r.or(b.toUInt())
+      r = (b.toInt() and 0xFF).shl(8)
 
-      return r.toUShort()
+      b = i.next(); p+=8
+      r = r.or((b.toInt() and 0xFF))
+
+      return r.toShort()
    }
 
 
-   private fun getUInt() : UInt {
-      //println("Requested UInt (32) from p=$p.")
+   private fun getInt() : Int {
+      //println("Requested Int (32) from p=$p.")
 
-      if (p.rem(8) != 0) throw IllegalStateException("Requested UInt (32) from off a byte boundary.")
+      if (p.rem(8) != 0) throw IllegalStateException("Requested Int (32) from off a byte boundary.")
 
-      var r : UInt
-
-      b = i.next(); p+=8
-      r = b.toUInt().shl(8)
+      var r : Int
 
       b = i.next(); p+=8
-      r = r.or(b.toUInt()).shl(8)
+      r = (b.toInt() and 0xFF).shl(8)
 
       b = i.next(); p+=8
-      r = r.or(b.toUInt())
+      r = r.or((b.toInt() and 0xFF)).shl(8)
+
+      b = i.next(); p+=8
+      r = r.or((b.toInt() and 0xFF))
 
       return r
    }
 
 
-   private fun getBytes(k:Int) : UInt {
+   private fun getBytes(k:Int) : Int {
       //println("Requested k=$k bytes from p=$p.")
 
       if (k <= 0 || k > 4) throw IllegalArgumentException("Requested k=$k bytes, k not in 1 .. 4.")
@@ -510,11 +518,11 @@ class Decoder(private val data:UByteArray) {
       val o : Int = p.rem(8)
       if (o != 0) throw IllegalStateException("Requested k=$k bytes from off of a byte boundary, offset o=$o.")
 
-      var bits : UInt = 0u
+      var bits = 0
 
       for (j in 1..k) {
          b = i.next(); p+=8
-         bits = bits.shl(8).or(b.toUInt())
+         bits = bits.shl(8) or (b.toInt() and 0xFF)
       }
 
       return bits
@@ -530,28 +538,28 @@ class Decoder(private val data:UByteArray) {
    private fun skipBytes(k:Int) {
       //println("Skipping k=$k bytes from p=$p.")
       if (p.rem(8) != 0) throw IllegalStateException("Requested to skip k=$k bytes from off of a byte boundary, p=$p.")
-      for (i in 1..k) getUByte()
+      for (i in 1..k) getByte()
    }
 
 
-   private fun getBytesLong(k:Int) : ULong {
-      //println("Requested k=$k bytes, as ULong, from p=$p.")
+   private fun getBytesLong(k:Int) : Long {
+      //println("Requested k=$k bytes, as Long, from p=$p.")
 
       if (k <= 0 || k > 8) throw IllegalArgumentException("Requested k=$k bytes, k not in 1 .. 8.")
       if (p.rem(8) != 0) throw IllegalStateException("Requested k=$k bytes from off of a byte boundary, p=$p.")
 
-      var bits : ULong = 0u
+      var bits : Long = 0
 
       for (j in 1..k) {
          b = i.next(); p+=8
-         bits = bits.shl(8).or(b.toULong())
+         bits = bits.shl(8) or (b.toInt() and 0xFF).toLong()
       }
 
       return bits
    }
 
 
-   private fun getUByteArray(k:Int) : UByteArray {
+   private fun getByteArray(k:Int) : ByteArray {
       //println("Requested k=$k bytes from p=$p.")
 
       if (p.rem(8) != 0) throw IllegalStateException("Requested byte array from off of a byte boundary, p=$p.")
@@ -560,20 +568,20 @@ class Decoder(private val data:UByteArray) {
 
       if (k > r) throw IllegalStateException("Requested k=$k bytes, but only $r remain.")
 
-      val bytes = UByteArray(k)
+      val bytes = ByteArray(k)
 
-      for (i in 0 until k) bytes[i] = getUByte()
+      for (i in 0 until k) bytes[i] = getByte()
 
       return bytes
    }
 
 
-   private fun getBits(k:Int) : UInt {
-      //println("Requested k=$k bits, as UInt, from p=$p.")
+   private fun getBits(k:Int) : Int {
+      //println("Requested k=$k bits, as Int, from p=$p.")
 
       if (k <= 0 || k > 32) throw IllegalArgumentException("Requested k=$k not in 0 < k <= 32.")
 
-      var bits : UInt = 0u
+      var bits : Int = 0
 
       for (i in 1 .. k) bits = bits.shl(1).or(getBit())
 
@@ -581,12 +589,12 @@ class Decoder(private val data:UByteArray) {
    }
 
 
-   private fun getBitsLong(k:Int) : ULong {
-      //println("Requested k=$k bits, as ULong, from p=$p.")
+   private fun getBitsLong(k:Int) : Long {
+      //println("Requested k=$k bits, as Long, from p=$p.")
 
       if (k <= 0 || k > 64) throw IllegalArgumentException("Requested k=$k not in 0 < k <= 32.")
 
-      var bits : ULong = 0u
+      var bits : Long = 0L
 
       for (i in 1 .. k) bits = bits.shl(1).or(getBitLong())
 
@@ -594,16 +602,16 @@ class Decoder(private val data:UByteArray) {
    }
 
 
-   private fun getBit() : UInt {
-      //println("Requested a bit, as UInt, from p=$p.")
+   private fun getBit() : Int {
+      //println("Requested a bit, as Int, from p=$p.")
 
       val r = p % 8 // where are we in the current byte
 
       if (r == 0) b = i.next()
 
-      val u = b.toUInt()
-      val mask = 1u.shl(7-r)
-      val bit : UInt = if (u.and(mask) > 0u) 1u else 0u
+      val u = b.toInt() and 0xFF
+      val mask = 1.shl(7-r)
+      val bit : Int = if (u.and(mask) > 0) 1 else 0
 
       p++
 
@@ -611,16 +619,16 @@ class Decoder(private val data:UByteArray) {
    }
 
 
-   private fun getBitLong() : ULong {
-      //println("Requested a bit, as ULong, from p=$p.")
+   private fun getBitLong() : Long {
+      //println("Requested a bit, as Long, from p=$p.")
 
       val r = p % 8 // how many bits of the current byte
 
       if (r == 0) b = i.next()
 
-      val u = b.toUInt()
-      val mask = 1u.shl(7-r)
-      val bit : ULong = if (u.and(mask) > 0u) 1u else 0u
+      val u = b.toInt() and 0xFF
+      val mask = 1.shl(7-r)
+      val bit : Long = if (u.and(mask) > 0) 1 else 0
 
       p++
 

@@ -3,7 +3,7 @@ package com.realeyes.scte35
 /**
  * segmentation_upid_type
  */
-class UPID (val t:Int, val bytes:UByteArray) {
+class UPID (val t:Int, val bytes:ByteArray) {
 
    enum class Type (val length:Int, val description:String) {
       None ( 0, "Not Used"),
@@ -66,7 +66,7 @@ class UPID (val t:Int, val bytes:UByteArray) {
     * @return [bytes] as a UTF-8 string.
     */
    fun UTF8String() : String {
-      return String(this.bytes.toByteArray(), Charsets.UTF_8)
+      return String(this.bytes, Charsets.UTF_8)
    }
 
 
@@ -81,7 +81,7 @@ class UPID (val t:Int, val bytes:UByteArray) {
 
    override fun hashCode(): Int {
       var result = t
-      for (i in bytes.indices) result = 31 * result + bytes[i].toInt()
+      for (i in bytes.indices) result = 31 * result + (bytes[i].toInt() and 0xFF)
       return result
    }
 
